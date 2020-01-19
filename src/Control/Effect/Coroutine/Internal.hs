@@ -20,3 +20,12 @@ instance HFunctor (Yield a b) where
 
 instance Effect (Yield a b) where
   thread ctx handler (Yield x res) = Yield x (handler . (<$ ctx) . res)
+
+-- This datatype represents the status of a coroutine.
+data Status m a b r
+  = Done r
+--  ^ Coroutine is done, returning a value of type `r`.
+  | Continue a (b -> m (Status m a b r))
+--  ^ Coroutine is not done.
+--  Reports a value of type `a`, being the computation thus far
+--  Resumes with type b, possibly returns a value of `m (Status m a b r)`.
