@@ -146,7 +146,7 @@ instance (Algebra sig m, Effect sig, Monoid w) => Algebra (Reader r :+: Writer w
   alg (R (L (Censor f m k))) = RWS.Lazy.censor f m >>= k
   alg (R (R (L (Get   k))))  = RWS.Lazy.get >>= k
   alg (R (R (L (Put s k))))  = RWS.Lazy.put s *> k
-  alg (R (R (R other)))      = RWS.Lazy.RWST $ \ r s -> unRWSTF <$> alg (thread (RWSTF ((), s, mempty)) (\ (RWSTF (x, s, w)) -> toRWSTF w <$> RWS.Lazy.runRWST x r s) other)
+  alg (R (R (R other)))      = RWS.Lazy.RWST $ \ r s -> unRWSTF <$> alg (thread (RWSTF ((), s, mempty)) (\ (RWSTF (x, s', w)) -> toRWSTF w <$> RWS.Lazy.runRWST x r s') other)
 
 instance (Algebra sig m, Effect sig, Monoid w) => Algebra (Reader r :+: Writer w :+: State s :+: sig) (RWS.Strict.RWST r w s m) where
   alg (L (Ask       k))      = RWS.Strict.ask >>= k
@@ -156,17 +156,17 @@ instance (Algebra sig m, Effect sig, Monoid w) => Algebra (Reader r :+: Writer w
   alg (R (L (Censor f m k))) = RWS.Strict.censor f m >>= k
   alg (R (R (L (Get   k))))  = RWS.Strict.get >>= k
   alg (R (R (L (Put s k))))  = RWS.Strict.put s *> k
-  alg (R (R (R other)))      = RWS.Strict.RWST $ \ r s -> unRWSTF <$> alg (thread (RWSTF ((), s, mempty)) (\ (RWSTF (x, s, w)) -> toRWSTF w <$> RWS.Strict.runRWST x r s) other)
+  alg (R (R (R other)))      = RWS.Strict.RWST $ \ r s -> unRWSTF <$> alg (thread (RWSTF ((), s, mempty)) (\ (RWSTF (x, s', w)) -> toRWSTF w <$> RWS.Strict.runRWST x r s') other)
 
 instance (Algebra sig m, Effect sig) => Algebra (State s :+: sig) (State.Lazy.StateT s m) where
   alg (L (Get   k)) = State.Lazy.get >>= k
   alg (L (Put s k)) = State.Lazy.put s *> k
-  alg (R other)     = State.Lazy.StateT $ \ s -> swap <$> alg (thread (s, ()) (\ (s, x) -> swap <$> State.Lazy.runStateT x s) other)
+  alg (R other)     = State.Lazy.StateT $ \ s -> swap <$> alg (thread (s, ()) (\ (s', x) -> swap <$> State.Lazy.runStateT x s') other)
 
 instance (Algebra sig m, Effect sig) => Algebra (State s :+: sig) (State.Strict.StateT s m) where
   alg (L (Get   k)) = State.Strict.get >>= k
   alg (L (Put s k)) = State.Strict.put s *> k
-  alg (R other)     = State.Strict.StateT $ \ s -> swap <$> alg (thread (s, ()) (\ (s, x) -> swap <$> State.Strict.runStateT x s) other)
+  alg (R other)     = State.Strict.StateT $ \ s -> swap <$> alg (thread (s, ()) (\ (s', x) -> swap <$> State.Strict.runStateT x s') other)
 
 instance (Algebra sig m, Effect sig, Monoid w) => Algebra (Writer w :+: sig) (Writer.Lazy.WriterT w m) where
   alg (L (Tell w k))     = Writer.Lazy.tell w *> k
