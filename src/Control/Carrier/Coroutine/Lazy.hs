@@ -5,7 +5,7 @@ module Control.Carrier.Coroutine.Lazy
 
   )where
 
--- import Control.Algebra
+import Control.Algebra
 import Control.Effect.Coroutine
 
 newtype YieldC a b m c = YieldC { unYieldC :: Status m a b c }
@@ -21,10 +21,12 @@ instance Monad m => Monad (YieldC a b m) where
   YieldC (Continue x k) >>= f =
     YieldC (Continue x (fmap (unYieldC . (>>= f) . YieldC) . k))
 
--- alg :: sig m a -> m a
 -- So we need to produce something of type YieldC a b m c
 -- What things are of this type?
 -- It's Status things, I think
--- instance (Algebra sig m) => Algebra (Yield a b :+: sig) (YieldC a b m) where -
---   alg (L (Yield x k)) = undefined
---   alg (R y) = undefined
+-- alg :: sig m a -> m a
+-- here, alg returns something of type YieldC
+-- not sure how the types work out here
+instance (Algebra sig m) => Algebra (Yield a b :+: sig) (YieldC a b m) where
+  alg (L (Yield x k)) = YieldC (Continue x (pure . unYieldC . k))
+  alg (R other) = undefined
