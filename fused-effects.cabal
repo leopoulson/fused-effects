@@ -47,6 +47,7 @@ library
     Control.Algebra
     -- Carriers
     Control.Carrier.Choose.Church
+    Control.Carrier.Coroutine.Lazy
     Control.Carrier.Cull.Church
     Control.Carrier.Cut.Church
     Control.Carrier.Empty.Maybe
