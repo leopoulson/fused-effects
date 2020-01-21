@@ -9,11 +9,7 @@ import Control.Algebra
 import Control.Effect.Coroutine
 
 newtype YieldC a b m c = YieldC { unYieldC :: Status m a b c }
-  deriving (Functor)
-
-instance Monad m => Applicative (YieldC a b m) where
-  pure a = YieldC (pure a)
-  YieldC f <*> YieldC a = YieldC (f <*> a)
+  deriving (Functor, Applicative)
 
 instance Monad m => Monad (YieldC a b m) where
   return = pure
