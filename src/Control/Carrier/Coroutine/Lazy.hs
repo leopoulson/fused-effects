@@ -25,4 +25,13 @@ instance Monad m => Monad (YieldC a b m) where
 -- not sure how the types work out here
 instance (Algebra sig m) => Algebra (Yield a b :+: sig) (YieldC a b m) where
   alg (L (Yield x k)) = YieldC (Continue x (pure . unYieldC . k))
-  alg (R other) = undefined
+
+  -- This is a handler for a Yield effect that may be embedded in another effect
+  -- inside the signature.
+  -- Perhaps we can use thread here?
+  -- alg :: (Yield a b :+: sig) (YieldC a b m) x -> YieldC a b m x
+
+  -- this definition works, but does it do what we want? it will just unwrap the
+  -- outer layer of any YieldC and apply the algebra
+  -- this is /probably/ wrong
+  alg (R other) = alg (R (handleCoercible other))
