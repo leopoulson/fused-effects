@@ -1,11 +1,12 @@
-{-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE DeriveFunctor, FlexibleInstances, KindSignatures, MultiParamTypeClasses, UndecidableInstances #-}
+
 module Control.Effect.Coroutine.Internal
   ( Yield(..)
   , Status(..)
   ) where
 
-import Control.Effect.Class
+import Control.Algebra
+-- import Control.Effect.Class
 import Control.Monad (liftM2)
 
 -- This is the datatype of computations that yield control.
@@ -44,3 +45,9 @@ instance Monad m => Monad (Status m a b) where
   return = pure
   Done a >>= f = f a
   Continue x k >>= f = Continue x (fmap (>>= f) . k)
+
+-- instance (Algebra sig m) => Algebra sig (Status m a b) where
+--   alg ((Done _)) = undefined
+--   alg (Continue x k) = undefined
+--   -- alg (L (Continue x k)) = undefined
+--   -- alg (R other) = undefined
