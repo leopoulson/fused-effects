@@ -19,24 +19,14 @@ instance Monad m => Monad (YieldC a b m) where
 
 -- Taken from Vera's effects
 -- This lets us always produce an x, given a status and two functions
--- This is basically an algebra for Status?
-status :: (c -> x) -> (a -> (b -> m (Status m a b c)) -> x) -> Status m a b c -> x
-status f _ (Done r) = f r
-status _ g (Continue x k) = g x k
-
--- This basically lets us swap the contexts.
--- joinStatus :: Effects effs => Status Eff effs a b (Eff (Yield a b : effs) x) -> Eff effs (Status Eff effs a b x)
--- joinStatus ::
+-- status :: (c -> x) -> (a -> (b -> m (Status m a b c)) -> x) -> Status m a b c -> x
+-- status f _ (Done r) = f r
+-- status _ g (Continue x k) = g x k
 
 
-something :: Status a b m (YieldC ms as bs x) -> YieldC ms as bs (Status a b m x)
-something = undefined
--- something = status alg _ . unYieldC
---
-
-
--- collapse :: YieldC a b m (Status ms as bs res) -> YieldC a b m res
--- collapse x = undefined
+-- runCoro :: Monad m => (a -> b) -> YieldC a b m c -> m c
+-- runCoro _ (YieldC (Done r)) = pure r
+-- runCoro f (YieldC (Continue a res)) = (res (f a)) >>= (runCoro f . YieldC)
 
 -- So we need to produce something of type YieldC a b m c
 -- What things are of this type?
@@ -56,9 +46,10 @@ instance (Algebra sig m, Effect sig) => Algebra (Yield a b :+: sig) (YieldC a b 
   -- outer layer of any YieldC and apply the algebra
   -- this is /probably/ wrong
   -- alg (R other) = alg (R (handleCoercible other))
-  -- alg (R other) = fmap (status id _) (_alg (thread (Done ()) (something) other))
+  -- alg (R other) = fmap (status id _) (alg (thread (Done ()) (something) other))
   -- alg (R other) = ((thread (Done ()) _ other))
-  alg (R other) = YieldC (alg _)
+  -- alg (R other) = (alg (R (other)))
+  alg (R other) = alg (R (handleCoercible other))
 
   -- other :: sig (YieldC a b m)
 
